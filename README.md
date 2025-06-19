@@ -1,6 +1,6 @@
 # PDF Analyzer
 
-A powerful PDF analysis tool that uses Google's Gemini AI to answer questions about uploaded PDF documents. Built with Streamlit frontend and FastAPI backend.
+A powerful PDF analysis tool that uses Google's Gemini AI to answer questions about uploaded PDF documents. Built with Streamlit for easy deployment.
 
 ## Features
 
@@ -9,7 +9,7 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 - 💬 Interactive chat interface
 - 📱 Responsive design
 - 🔄 Real-time analysis
-- 🏗️ Clean separation between frontend and backend
+- ☁️ Streamlit Cloud ready
 - 🔐 Secure API key management
 
 ## How it Works
@@ -22,8 +22,7 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 
 ## Technology Stack
 
-- **Frontend**: Streamlit
-- **Backend**: FastAPI
+- **Frontend & Backend**: Streamlit (unified)
 - **AI**: Google Gemini 2.0 Flash
 - **PDF Processing**: PyMuPDF (fitz)
 - **Deployment**: Streamlit Cloud
@@ -32,8 +31,8 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 
 ```
 pdf-analyzer/
-├── streamlit_app.py    # Streamlit frontend application
-├── api.py             # FastAPI backend server
+├── streamlit_app.py    # Main Streamlit application (frontend + backend)
+├── api.py             # FastAPI backend (for local development)
 ├── requirements.txt   # Python dependencies
 ├── README.md         # Project documentation
 ├── .gitignore        # Git ignore file
@@ -75,17 +74,17 @@ pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
 
-The app will automatically start both the frontend (Streamlit) and backend (FastAPI) servers.
+The app will be available at `http://localhost:8501`
 
-### Manual Backend Start (Optional)
+### Alternative: Separate Backend (Local Development)
 
-If you want to run the backend separately:
+If you want to run with a separate backend for development:
 
 ```bash
 # Terminal 1: Start the API server
 python api.py
 
-# Terminal 2: Start the frontend
+# Terminal 2: Start the frontend (modify streamlit_app.py to use localhost:8000)
 streamlit run streamlit_app.py
 ```
 
@@ -119,31 +118,34 @@ streamlit run streamlit_app.py
 - ✅ `.env` file is ignored by git
 - ✅ No sensitive data in the repository
 - ✅ Secure deployment on Streamlit Cloud
-
-## API Endpoints
-
-- `POST /analyze`: Analyze PDF content and answer questions
-- `GET /`: Health check endpoint
+- ✅ Single-file deployment eliminates backend connection issues
 
 ## File Descriptions
 
 ### `streamlit_app.py`
-- Main Streamlit frontend application
+- Main Streamlit application (unified frontend + backend)
 - Handles file uploads and user interface
-- Communicates with the FastAPI backend
+- Directly processes PDFs and calls Gemini AI
 - Manages chat history and session state
+- **Streamlit Cloud compatible**
 
 ### `api.py`
-- FastAPI backend server
+- FastAPI backend server (for local development)
 - Handles PDF processing and AI analysis
 - Integrates with Google Gemini API
 - Provides REST API endpoints
-- Uses environment variables for API key
+- **Optional for local development**
 
 ### `env_example.txt`
 - Example environment variables file
 - Shows what variables need to be set
 - Safe to commit to repository
+
+## API Endpoints (Local Development Only)
+
+When using `api.py`:
+- `POST /analyze`: Analyze PDF content and answer questions
+- `GET /`: Health check endpoint
 
 ## Contributing
 
