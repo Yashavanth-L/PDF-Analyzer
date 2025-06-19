@@ -73,39 +73,55 @@ def display_pdf_preview(uploaded_file):
     tab1, tab2, tab3 = st.tabs(["📄 PDF Viewer", "📥 Download", "ℹ️ Info"])
     
     with tab1:
-        try:
-            # Check file size first
-            file_size = len(uploaded_file.getvalue())
-            file_size_mb = file_size / (1024 * 1024)
+        # Check file size first
+        file_size = len(uploaded_file.getvalue())
+        file_size_mb = file_size / (1024 * 1024)
+        
+        if file_size_mb > 5:  # If file is larger than 5MB
+            st.warning("⚠️ File is too large for preview. Please use the Download tab.")
+            st.info(f"File size: {file_size_mb:.2f} MB (max 5MB for preview)")
+        else:
+            # Try to detect browser and provide appropriate guidance
+            st.info("🔍 **Browser Detection:** PDF preview may be blocked by your browser.")
             
-            if file_size_mb > 5:  # If file is larger than 5MB
-                st.warning("⚠️ File is too large for preview. Please use the Download tab.")
-                st.info(f"File size: {file_size_mb:.2f} MB (max 5MB for preview)")
-            else:
-                # Use simple iframe with data URL for smaller files
-                base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            # Create a simple preview attempt with clear fallback
+            base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            
+            pdf_display = f'''
+            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: #f9f9f9;">
+                <div style="margin-bottom: 15px; font-weight: bold; color: #333; font-size: 16px;">📄 {uploaded_file.name}</div>
                 
-                pdf_display = f'''
-                <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;">
-                    <div style="margin-bottom: 10px; font-weight: bold; color: #333;">📄 {uploaded_file.name}</div>
-                    <iframe 
-                        src="data:application/pdf;base64,{base64_pdf}" 
+                <div style="background: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 20px; text-align: center;">
+                    <p style="margin-bottom: 15px; color: #666;">Attempting to load PDF preview...</p>
+                    
+                    <object 
+                        data="data:application/pdf;base64,{base64_pdf}" 
+                        type="application/pdf" 
                         width="100%" 
-                        height="500px" 
-                        style="border: none; border-radius: 3px;"
-                        title="PDF Viewer"
+                        height="400px"
+                        style="border: 1px solid #ddd; border-radius: 3px;"
                     >
-                        <p>Your browser doesn't support PDF preview. 
-                        <a href="data:application/pdf;base64,{base64_pdf}" download="{uploaded_file.name}">Download PDF</a></p>
-                    </iframe>
+                        <div style="padding: 20px; color: #666;">
+                            <p>📱 <strong>PDF Preview Not Available</strong></p>
+                            <p>Your browser has blocked the PDF preview for security reasons.</p>
+                            <p style="margin-top: 15px;">
+                                <a href="data:application/pdf;base64,{base64_pdf}" 
+                                   download="{uploaded_file.name}"
+                                   style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                    📥 Download PDF
+                                </a>
+                            </p>
+                        </div>
+                    </object>
                 </div>
-                '''
-                st.markdown(pdf_display, unsafe_allow_html=True)
-                uploaded_file.seek(0)  # Reset file pointer
                 
-        except Exception as e:
-            st.warning(f"PDF preview not available: {str(e)}")
-            st.info("Please use the Download tab to view the PDF.")
+                <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px; border-left: 4px solid #007bff;">
+                    <p style="margin: 0; color: #0056b3;"><strong>💡 Tip:</strong> Use the "Download" tab for the best experience!</p>
+                </div>
+            </div>
+            '''
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            uploaded_file.seek(0)  # Reset file pointer
     
     with tab2:
         st.download_button(
@@ -115,21 +131,51 @@ def display_pdf_preview(uploaded_file):
             mime="application/pdf",
             help="Click to download and view the PDF in your browser"
         )
-        st.info("💡 **Tip:** Download the PDF to view it properly in your browser.")
         
         # Show file size info
         file_size = len(uploaded_file.getvalue())
         file_size_mb = file_size / (1024 * 1024)
         st.write(f"**File size:** {file_size_mb:.2f} MB")
         
-        # Provide alternative viewing options
-        st.markdown("### Alternative Viewing Options:")
-        st.markdown("""
-        - **Download and open** in your default PDF viewer
-        - **Use Firefox** (better PDF support in browser)
-        - **Use Microsoft Edge** (good PDF support)
-        - **Use Google Drive** - Upload and view online
-        """)
+        # Provide clear instructions for different browsers
+        st.markdown("### 🌐 Browser-Specific Instructions:")
+        
+        with st.expander("Chrome Users"):
+            st.markdown("""
+            **Chrome blocks PDF previews for security. Here's how to view your PDF:**
+            
+            1. **Click the Download button above** 
+            2. **Choose "Open"** when prompted
+            3. **Or save and open** in your default PDF viewer
+            
+            **Alternative:** Use Firefox or Edge for better PDF support
+            """)
+        
+        with st.expander("Firefox Users"):
+            st.markdown("""
+            **Firefox has good PDF support:**
+            
+            1. **Try the PDF Viewer tab** - it might work!
+            2. **Download and open** if preview doesn't work
+            3. **Firefox has built-in PDF viewer** - usually works well
+            """)
+        
+        with st.expander("Edge Users"):
+            st.markdown("""
+            **Microsoft Edge has good PDF support:**
+            
+            1. **Try the PDF Viewer tab** - Edge often works
+            2. **Download and open** if needed
+            3. **Edge has built-in PDF viewer** - usually reliable
+            """)
+        
+        # Quick actions
+        st.markdown("### ⚡ Quick Actions:")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.button("🔄 Try Preview Again", help="Refresh the preview tab")
+        with col2:
+            st.button("📋 Copy File Name", help="Copy the PDF filename to clipboard")
     
     with tab3:
         file_size = len(uploaded_file.getvalue())
@@ -150,10 +196,21 @@ def display_pdf_preview(uploaded_file):
         except:
             st.write("**Pages:** Unable to determine")
         
-        # Show preview compatibility info
-        st.markdown("### Preview Compatibility:")
+        # Browser compatibility info
+        st.markdown("### 🌐 Browser Compatibility:")
+        st.markdown("""
+        | Browser | PDF Preview | Download | Recommendation |
+        |---------|-------------|----------|----------------|
+        | **Firefox** | ✅ Usually works | ✅ Always works | **Best choice** |
+        | **Edge** | ✅ Usually works | ✅ Always works | **Good choice** |
+        | **Safari** | ⚠️ Sometimes works | ✅ Always works | **Try preview** |
+        | **Chrome** | ❌ Blocked | ✅ Always works | **Use download** |
+        """)
+        
+        # File size compatibility
+        st.markdown("### 📏 File Size Compatibility:")
         if file_size_mb <= 5:
-            st.success("✅ File size is suitable for browser preview")
+            st.success("✅ File size is suitable for browser preview (≤5MB)")
         else:
             st.warning("⚠️ File is too large for browser preview (>5MB)")
             st.info("Large files work best when downloaded and opened locally.")
