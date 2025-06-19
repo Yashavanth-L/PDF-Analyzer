@@ -4,4 +4,6 @@ enableCORS = false
 enableXsrfProtection = false
 
 [browser]
-gatherUsageStats = false 
+gatherUsageStats = false
+
+GEMINI_API_KEY = "AIzaSyDAWV9nONsWGIiIOCh7TzJ9xocnME994IY" 
