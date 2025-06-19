@@ -74,27 +74,28 @@ def display_pdf_preview(uploaded_file):
     
     with tab1:
         try:
-            # Try to use streamlit-pdf-viewer if available
-            try:
-                from streamlit_pdf_viewer import pdf_viewer
-                pdf_viewer(uploaded_file, width=700)
-            except ImportError:
-                # Fallback to iframe with better error handling
-                base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
-                pdf_display = f'''
+            # Create a more robust PDF viewer using HTML5
+            base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            
+            # Use PDF.js viewer for better compatibility
+            pdf_display = f'''
+            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;">
+                <div style="margin-bottom: 10px; font-weight: bold; color: #333;">📄 {uploaded_file.name}</div>
                 <iframe 
-                    src="data:application/pdf;base64,{base64_pdf}" 
+                    src="https://mozilla.github.io/pdf.js/web/viewer.html?file=data:application/pdf;base64,{base64_pdf}" 
                     width="100%" 
                     height="500px" 
-                    type="application/pdf"
-                    style="border: 1px solid #ddd; border-radius: 5px;"
+                    style="border: none; border-radius: 3px;"
+                    title="PDF Viewer"
                 >
                     <p>Your browser doesn't support PDF preview. 
                     <a href="data:application/pdf;base64,{base64_pdf}" download="{uploaded_file.name}">Download PDF</a></p>
                 </iframe>
-                '''
-                st.markdown(pdf_display, unsafe_allow_html=True)
-                uploaded_file.seek(0)  # Reset file pointer
+            </div>
+            '''
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            uploaded_file.seek(0)  # Reset file pointer
+            
         except Exception as e:
             st.warning(f"PDF preview not available: {str(e)}")
             st.info("Please use the Download tab to view the PDF.")
@@ -108,6 +109,12 @@ def display_pdf_preview(uploaded_file):
             help="Click to download and view the PDF in your browser"
         )
         st.info("💡 **Tip:** Download the PDF to view it properly in your browser.")
+        
+        # Also provide a direct link
+        base64_pdf = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
+        st.markdown(f"""
+        **Direct Link:** [Open PDF in new tab](data:application/pdf;base64,{base64_pdf})
+        """)
     
     with tab3:
         file_size = len(uploaded_file.getvalue())
