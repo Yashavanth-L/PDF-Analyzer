@@ -10,6 +10,7 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 - 📱 Responsive design
 - 🔄 Real-time analysis
 - 🏗️ Clean separation between frontend and backend
+- 🔐 Secure API key management
 
 ## How it Works
 
@@ -35,7 +36,8 @@ pdf-analyzer/
 ├── api.py             # FastAPI backend server
 ├── requirements.txt   # Python dependencies
 ├── README.md         # Project documentation
-└── .gitignore        # Git ignore file
+├── .gitignore        # Git ignore file
+└── env_example.txt   # Environment variables example
 ```
 
 ## Local Development
@@ -60,7 +62,13 @@ pip install -r requirements.txt
 
 3. Set up your Google Gemini API key:
    - Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Replace the API key in `api.py`
+   - Create a `.env` file in the project root:
+   ```bash
+   # Create .env file
+   echo "GEMINI_API_KEY=your_actual_api_key_here" > .env
+   ```
+   - Replace `your_actual_api_key_here` with your real API key
+   - **Important**: The `.env` file is already in `.gitignore` and will not be pushed to GitHub
 
 4. Run the application:
 ```bash
@@ -86,6 +94,7 @@ streamlit run streamlit_app.py
 1. **Push to GitHub**: 
    - Create a new repository on GitHub
    - Push your code to the repository
+   - **Note**: Your API key in `.env` will NOT be pushed to GitHub
 
 2. **Deploy on Streamlit Cloud**:
    - Go to [share.streamlit.io](https://share.streamlit.io)
@@ -95,9 +104,21 @@ streamlit run streamlit_app.py
    - Set the main file path to: `streamlit_app.py`
    - Click "Deploy"
 
-3. **Environment Variables** (Optional):
+3. **Set Environment Variables in Streamlit Cloud**:
    - In Streamlit Cloud, go to your app settings
-   - Add environment variables if you want to use a different API key
+   - Click on "Secrets" in the sidebar
+   - Add your API key:
+   ```toml
+   GEMINI_API_KEY = "your_actual_api_key_here"
+   ```
+   - Save and redeploy your app
+
+## Security Notes
+
+- ✅ API key is stored in environment variables
+- ✅ `.env` file is ignored by git
+- ✅ No sensitive data in the repository
+- ✅ Secure deployment on Streamlit Cloud
 
 ## API Endpoints
 
@@ -117,6 +138,12 @@ streamlit run streamlit_app.py
 - Handles PDF processing and AI analysis
 - Integrates with Google Gemini API
 - Provides REST API endpoints
+- Uses environment variables for API key
+
+### `env_example.txt`
+- Example environment variables file
+- Shows what variables need to be set
+- Safe to commit to repository
 
 ## Contributing
 

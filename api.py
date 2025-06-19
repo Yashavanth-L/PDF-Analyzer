@@ -5,9 +5,25 @@ import base64
 import fitz
 import tempfile
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get API key from environment variable
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Check if API key is provided
+if not GEMINI_API_KEY:
+    raise ValueError(
+        "GEMINI_API_KEY environment variable is required. "
+        "Please set it in your .env file or environment variables. "
+        "Get your API key from: https://makersuite.google.com/app/apikey"
+    )
 
 # Gemini API setup
-genai.configure(api_key="AIzaSyDAWV9nONsWGIiIOCh7TzJ9xocnME994IY")
+genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 # FastAPI app setup
