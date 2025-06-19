@@ -74,28 +74,35 @@ def display_pdf_preview(uploaded_file):
     
     with tab1:
         try:
-            # Create a more robust PDF viewer using HTML5
-            base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+            # Check file size first
+            file_size = len(uploaded_file.getvalue())
+            file_size_mb = file_size / (1024 * 1024)
             
-            # Use PDF.js viewer for better compatibility
-            pdf_display = f'''
-            <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;">
-                <div style="margin-bottom: 10px; font-weight: bold; color: #333;">📄 {uploaded_file.name}</div>
-                <iframe 
-                    src="https://mozilla.github.io/pdf.js/web/viewer.html?file=data:application/pdf;base64,{base64_pdf}" 
-                    width="100%" 
-                    height="500px" 
-                    style="border: none; border-radius: 3px;"
-                    title="PDF Viewer"
-                >
-                    <p>Your browser doesn't support PDF preview. 
-                    <a href="data:application/pdf;base64,{base64_pdf}" download="{uploaded_file.name}">Download PDF</a></p>
-                </iframe>
-            </div>
-            '''
-            st.markdown(pdf_display, unsafe_allow_html=True)
-            uploaded_file.seek(0)  # Reset file pointer
-            
+            if file_size_mb > 5:  # If file is larger than 5MB
+                st.warning("⚠️ File is too large for preview. Please use the Download tab.")
+                st.info(f"File size: {file_size_mb:.2f} MB (max 5MB for preview)")
+            else:
+                # Use simple iframe with data URL for smaller files
+                base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+                
+                pdf_display = f'''
+                <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9;">
+                    <div style="margin-bottom: 10px; font-weight: bold; color: #333;">📄 {uploaded_file.name}</div>
+                    <iframe 
+                        src="data:application/pdf;base64,{base64_pdf}" 
+                        width="100%" 
+                        height="500px" 
+                        style="border: none; border-radius: 3px;"
+                        title="PDF Viewer"
+                    >
+                        <p>Your browser doesn't support PDF preview. 
+                        <a href="data:application/pdf;base64,{base64_pdf}" download="{uploaded_file.name}">Download PDF</a></p>
+                    </iframe>
+                </div>
+                '''
+                st.markdown(pdf_display, unsafe_allow_html=True)
+                uploaded_file.seek(0)  # Reset file pointer
+                
         except Exception as e:
             st.warning(f"PDF preview not available: {str(e)}")
             st.info("Please use the Download tab to view the PDF.")
@@ -110,10 +117,18 @@ def display_pdf_preview(uploaded_file):
         )
         st.info("💡 **Tip:** Download the PDF to view it properly in your browser.")
         
-        # Also provide a direct link
-        base64_pdf = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
-        st.markdown(f"""
-        **Direct Link:** [Open PDF in new tab](data:application/pdf;base64,{base64_pdf})
+        # Show file size info
+        file_size = len(uploaded_file.getvalue())
+        file_size_mb = file_size / (1024 * 1024)
+        st.write(f"**File size:** {file_size_mb:.2f} MB")
+        
+        # Provide alternative viewing options
+        st.markdown("### Alternative Viewing Options:")
+        st.markdown("""
+        - **Download and open** in your default PDF viewer
+        - **Use Firefox** (better PDF support in browser)
+        - **Use Microsoft Edge** (good PDF support)
+        - **Use Google Drive** - Upload and view online
         """)
     
     with tab3:
@@ -134,6 +149,14 @@ def display_pdf_preview(uploaded_file):
             uploaded_file.seek(0)
         except:
             st.write("**Pages:** Unable to determine")
+        
+        # Show preview compatibility info
+        st.markdown("### Preview Compatibility:")
+        if file_size_mb <= 5:
+            st.success("✅ File size is suitable for browser preview")
+        else:
+            st.warning("⚠️ File is too large for browser preview (>5MB)")
+            st.info("Large files work best when downloaded and opened locally.")
 
 # Initialize session states
 if "qa_history" not in st.session_state:
