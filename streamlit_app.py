@@ -1,5 +1,4 @@
 import streamlit as st
-import requests
 import base64
 import google.generativeai as genai
 import fitz
