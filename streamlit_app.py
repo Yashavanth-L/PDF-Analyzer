@@ -65,6 +65,69 @@ def analyze_pdf(pdf_data, question):
     except Exception as e:
         return f"Error analyzing PDF: {str(e)}"
 
+# Function to display PDF preview
+def display_pdf_preview(uploaded_file):
+    st.markdown("#### 📑 Preview")
+    
+    # Create tabs for different preview options
+    tab1, tab2, tab3 = st.tabs(["📄 PDF Viewer", "📥 Download", "ℹ️ Info"])
+    
+    with tab1:
+        try:
+            # Try to use streamlit-pdf-viewer if available
+            try:
+                from streamlit_pdf_viewer import pdf_viewer
+                pdf_viewer(uploaded_file, width=700)
+            except ImportError:
+                # Fallback to iframe with better error handling
+                base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
+                pdf_display = f'''
+                <iframe 
+                    src="data:application/pdf;base64,{base64_pdf}" 
+                    width="100%" 
+                    height="500px" 
+                    type="application/pdf"
+                    style="border: 1px solid #ddd; border-radius: 5px;"
+                >
+                    <p>Your browser doesn't support PDF preview. 
+                    <a href="data:application/pdf;base64,{base64_pdf}" download="{uploaded_file.name}">Download PDF</a></p>
+                </iframe>
+                '''
+                st.markdown(pdf_display, unsafe_allow_html=True)
+                uploaded_file.seek(0)  # Reset file pointer
+        except Exception as e:
+            st.warning(f"PDF preview not available: {str(e)}")
+            st.info("Please use the Download tab to view the PDF.")
+    
+    with tab2:
+        st.download_button(
+            label="📥 Download PDF",
+            data=uploaded_file.getvalue(),
+            file_name=uploaded_file.name,
+            mime="application/pdf",
+            help="Click to download and view the PDF in your browser"
+        )
+        st.info("💡 **Tip:** Download the PDF to view it properly in your browser.")
+    
+    with tab3:
+        file_size = len(uploaded_file.getvalue())
+        file_size_mb = file_size / (1024 * 1024)
+        
+        st.write(f"**File Name:** {uploaded_file.name}")
+        st.write(f"**File Size:** {file_size_mb:.2f} MB")
+        st.write(f"**File Type:** PDF")
+        
+        # Try to get page count
+        try:
+            uploaded_file.seek(0)
+            doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+            page_count = len(doc)
+            st.write(f"**Pages:** {page_count}")
+            doc.close()
+            uploaded_file.seek(0)
+        except:
+            st.write("**Pages:** Unable to determine")
+
 # Initialize session states
 if "qa_history" not in st.session_state:
     st.session_state.qa_history = []
@@ -79,11 +142,7 @@ col1, col2 = st.columns([1, 2])
 with col1:
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
     if uploaded_file:
-        st.markdown("#### 📑 Preview")
-        base64_pdf = base64.b64encode(uploaded_file.read()).decode('utf-8')
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500px" type="application/pdf"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
-        uploaded_file.seek(0)  # reset pointer after reading
+        display_pdf_preview(uploaded_file)
 
 with col2:
     if uploaded_file:
