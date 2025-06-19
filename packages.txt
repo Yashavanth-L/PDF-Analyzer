@@ -1,2 +1,0 @@
-# System packages for PDF processing
-libmupdf-dev 
