@@ -1,6 +1,6 @@
 # PDF Analyzer
 
-A powerful PDF analysis tool that uses Google's Gemini AI to answer questions about uploaded PDF documents. Built with Streamlit and FastAPI.
+A powerful PDF analysis tool that uses Google's Gemini AI to answer questions about uploaded PDF documents. Built with Streamlit frontend and FastAPI backend.
 
 ## Features
 
@@ -9,6 +9,7 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 - 💬 Interactive chat interface
 - 📱 Responsive design
 - 🔄 Real-time analysis
+- 🏗️ Clean separation between frontend and backend
 
 ## How it Works
 
@@ -25,6 +26,17 @@ A powerful PDF analysis tool that uses Google's Gemini AI to answer questions ab
 - **AI**: Google Gemini 2.0 Flash
 - **PDF Processing**: PyMuPDF (fitz)
 - **Deployment**: Streamlit Cloud
+
+## Project Structure
+
+```
+pdf-analyzer/
+├── streamlit_app.py    # Streamlit frontend application
+├── api.py             # FastAPI backend server
+├── requirements.txt   # Python dependencies
+├── README.md         # Project documentation
+└── .gitignore        # Git ignore file
+```
 
 ## Local Development
 
@@ -48,14 +60,26 @@ pip install -r requirements.txt
 
 3. Set up your Google Gemini API key:
    - Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Replace the API key in `streamlit_app.py`
+   - Replace the API key in `api.py`
 
 4. Run the application:
 ```bash
 streamlit run streamlit_app.py
 ```
 
-The app will be available at `http://localhost:8501`
+The app will automatically start both the frontend (Streamlit) and backend (FastAPI) servers.
+
+### Manual Backend Start (Optional)
+
+If you want to run the backend separately:
+
+```bash
+# Terminal 1: Start the API server
+python api.py
+
+# Terminal 2: Start the frontend
+streamlit run streamlit_app.py
+```
 
 ## Deployment on Streamlit Cloud
 
@@ -68,32 +92,31 @@ The app will be available at `http://localhost:8501`
    - Sign in with your GitHub account
    - Click "New app"
    - Select your repository
-   - Set the main file path to `streamlit_app.py`
+   - Set the main file path to: `streamlit_app.py`
    - Click "Deploy"
 
 3. **Environment Variables** (Optional):
    - In Streamlit Cloud, go to your app settings
    - Add environment variables if you want to use a different API key
 
-## Project Structure
-
-```
-pdf-analyzer/
-├── streamlit_app.py      # Main application file
-├── requirements.txt      # Python dependencies
-├── README.md            # Project documentation
-├── backend/             # Backend API (if using separate backend)
-│   ├── main.py
-│   └── requirements.txt
-└── frontend/            # Frontend files (if using separate frontend)
-    ├── PDFAnalyzer.py
-    └── styles.css
-```
-
 ## API Endpoints
 
 - `POST /analyze`: Analyze PDF content and answer questions
 - `GET /`: Health check endpoint
+
+## File Descriptions
+
+### `streamlit_app.py`
+- Main Streamlit frontend application
+- Handles file uploads and user interface
+- Communicates with the FastAPI backend
+- Manages chat history and session state
+
+### `api.py`
+- FastAPI backend server
+- Handles PDF processing and AI analysis
+- Integrates with Google Gemini API
+- Provides REST API endpoints
 
 ## Contributing
 

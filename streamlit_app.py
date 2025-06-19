@@ -1,79 +1,27 @@
 import streamlit as st
 import requests
 import base64
-import google.generativeai as genai
-import fitz
-import tempfile
-from fastapi import FastAPI
-from pydantic import BaseModel
-import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
+import subprocess
 import threading
 import time
+import os
 
-# Gemini API setup
-genai.configure(api_key="AIzaSyDAWV9nONsWGIiIOCh7TzJ9xocnME994IY")
-model = genai.GenerativeModel("gemini-2.0-flash")
+# Set page config must be the first Streamlit command
+st.set_page_config(page_title="PDF Analyzer", page_icon="🔎", layout="wide")
 
-# FastAPI app setup
-app = FastAPI()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class AnalyzeRequest(BaseModel):
-    pdf_base64: str
-    question: str
-
-@app.post("/analyze")
-def analyze(request: AnalyzeRequest):
+# Function to start the API server
+def start_api_server():
     try:
-        pdf_data = base64.b64decode(request.pdf_base64)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            tmp_file.write(pdf_data)
-            tmp_file_path = tmp_file.name
+        subprocess.run(["python", "api.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        st.error(f"Failed to start API server: {e}")
 
-        doc = fitz.open(tmp_file_path)
-        full_text = ""
-        for page in doc:
-            full_text += page.get_text()
-
-        prompt = f"""
-📄 PDF CONTENT:
-{full_text}
-
-❓ QUESTION:
-{request.question}
-
-📘 ANSWER:
-"""
-
-        response = model.generate_content(prompt)
-        return {"answer": response.text.strip()}
-
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.get("/")
-def read_root():
-    return {"message": "PDF Analyzer Backend is running!"}
-
-# Function to start the FastAPI server
-def start_server():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-# Start the server in a separate thread
+# Start the API server in a separate thread
 @st.cache_resource
 def start_backend():
-    server_thread = threading.Thread(target=start_server, daemon=True)
+    server_thread = threading.Thread(target=start_api_server, daemon=True)
     server_thread.start()
-    time.sleep(2)  # Give the server time to start
+    time.sleep(3)  # Give the server time to start
     return server_thread
 
 # Initialize session states
@@ -85,8 +33,6 @@ if "chat_history" not in st.session_state:
 
 # Start the backend server
 start_backend()
-
-st.set_page_config(page_title="PDF Analyzer", page_icon="🔎", layout="wide")
 
 st.title("🖊 Analyze Your PDF")
 
