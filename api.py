@@ -7,6 +7,12 @@ import tempfile
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+import logging
+
+# Configure logging to be minimal
+logging.basicConfig(level=logging.ERROR)
+logging.getLogger("uvicorn").setLevel(logging.ERROR)
+logging.getLogger("uvicorn.access").setLevel(logging.ERROR)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -77,4 +83,10 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8000, 
+        log_level="error",
+        access_log=False
+    ) 

@@ -5,6 +5,10 @@ import subprocess
 import threading
 import time
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set page config must be the first Streamlit command
 st.set_page_config(page_title="PDF Analyzer", page_icon="🔎", layout="wide")
@@ -12,13 +16,40 @@ st.set_page_config(page_title="PDF Analyzer", page_icon="🔎", layout="wide")
 # Function to start the API server
 def start_api_server():
     try:
-        subprocess.run(["python", "api.py"], check=True)
+        # Set the environment variable for the subprocess
+        env = os.environ.copy()
+        if 'GEMINI_API_KEY' not in env:
+            st.error("GEMINI_API_KEY not found in environment variables. Please create a .env file.")
+            return
+        
+        # Run the API server with output redirected to avoid logs
+        subprocess.run(
+            ["python", "api.py"], 
+            env=env, 
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
     except subprocess.CalledProcessError as e:
         st.error(f"Failed to start API server: {e}")
 
 # Start the API server in a separate thread
 @st.cache_resource
 def start_backend():
+    # Check if API key is available
+    if not os.getenv("GEMINI_API_KEY"):
+        st.error("""
+        ❌ GEMINI_API_KEY not found! 
+        
+        Please create a `.env` file in the project root with:
+        ```
+        GEMINI_API_KEY=your_actual_api_key_here
+        ```
+        
+        Get your API key from: https://makersuite.google.com/app/apikey
+        """)
+        return None
+    
     server_thread = threading.Thread(target=start_api_server, daemon=True)
     server_thread.start()
     time.sleep(3)  # Give the server time to start
@@ -32,7 +63,7 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # Start the backend server
-start_backend()
+backend_thread = start_backend()
 
 st.title("🖊 Analyze Your PDF")
 
